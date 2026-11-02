@@ -223,10 +223,10 @@ export default function DetalleUnidad() {
             </dd>
           </dl>
           {aviso && <div className="exito" style={{ marginTop: 12 }}>{aviso}</div>}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+          <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
             <button
               className="btn"
-              style={{ background: "#25D366" }}
+              style={{ background: "#25D366", width: "100%" }}
               onClick={() => (esMovil() ? enviarPdfApp() : setMenuWhats((m) => !m))}
               disabled={compartiendo}
             >
@@ -234,6 +234,7 @@ export default function DetalleUnidad() {
             </button>
             <a
               className="btn sec"
+              style={{ width: "100%", textAlign: "center" }}
               href={`/api/unidades/${unidad.id}/pdf?download=1`}
             >
               ⬇ Descargar PDF
