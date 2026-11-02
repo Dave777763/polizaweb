@@ -73,6 +73,16 @@ export default function DetalleUnidad() {
     abrirWhatsAppConTexto(texto);
   }
 
+  // Copia el mensaje completo (teléfonos de emergencia incluidos) al portapapeles
+  async function copiarMensaje(texto) {
+    try {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    } catch {
+      return false; // sin permiso/soporte: seguimos sin bloquear el envío
+    }
+  }
+
   // 📎 App WhatsApp: panel nativo con el PDF adjunto (automático si la app está instalada).
   // Si nada lo soporta o el usuario cancela, rescata con la vía web.
   async function enviarPdfApp() {
@@ -82,11 +92,19 @@ export default function DetalleUnidad() {
     setAviso("");
     try {
       const texto = mensaje();
+      // WhatsApp móvil descarta el texto que va pegado al adjuntar archivos: lo dejamos
+      // copiado ANTES de todo (con el gesto fresco) para pegarlo en el chat si hace falta
+      const copiado = await copiarMensaje(texto);
       const { blob, nombre } = await obtenerPdf();
       const file = new File([blob], nombre, { type: "application/pdf" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: nombre, text: texto });
+          setAviso(
+            copiado
+              ? "📲 PDF compartido · El mensaje con los teléfonos quedó copiado al portapapeles: si no aparecieron en el chat, mantén presionada la caja de texto y pégalo."
+              : "📲 PDF compartido."
+          );
           return; // el sistema tomó el PDF
         } catch (e) {
           if (e?.name !== "AbortError") throw e;
@@ -94,7 +112,11 @@ export default function DetalleUnidad() {
         }
       }
       descargarYAbrirWeb(blob, nombre, texto);
-      setAviso("📥 PDF descargado y WhatsApp abierto: arrastra el archivo al chat.");
+      setAviso(
+        copiado
+          ? "📥 PDF descargado y WhatsApp abierto · arrastra el archivo; si hace falta el mensaje, mantén presionado el campo de texto y pégalo."
+          : "📥 PDF descargado y WhatsApp abierto: arrastra el archivo al chat."
+      );
     } catch (e) {
       if (e?.name === "AbortError") return;
       alert(e?.message || "No se pudo compartir");
