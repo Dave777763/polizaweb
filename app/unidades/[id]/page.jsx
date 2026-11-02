@@ -83,44 +83,6 @@ export default function DetalleUnidad() {
     }
   }
 
-  // Imagen-banner con los teléfonos de emergencia (generada al vuelo con canvas)
-  async function crearImagenTelefonos() {
-    try {
-      const ANCHO = 900;
-      const ALTO = 300;
-      const canvas = document.createElement("canvas");
-      canvas.width = ANCHO;
-      canvas.height = ALTO;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return null;
-
-      // Fondo azul Inbursa con marco
-      ctx.fillStyle = "#0b64c6";
-      ctx.fillRect(0, 0, ANCHO, ALTO);
-      ctx.strokeStyle = "rgba(255,255,255,.55)";
-      ctx.lineWidth = 5;
-      ctx.strokeRect(16, 16, ANCHO - 32, ALTO - 32);
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 33px Arial, Helvetica, sans-serif";
-      ctx.fillText("REPORTE DE SINIESTRO (INBURSA) 24 h", 44, 78);
-      ctx.fillRect(44, 96, ANCHO - 88, 3);
-
-      ctx.font = "bold 52px Arial, Helvetica, sans-serif";
-      ctx.fillText("☎ 800 911 9000", 44, 160);
-      ctx.fillText("☎ 55 5447 8080", 44, 222);
-
-      ctx.font = "26px Arial, Helvetica, sans-serif";
-      ctx.fillText("App Inbursa Móvil (con un clic te localizan)", 44, 272);
-
-      const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
-      if (!blob) return null;
-      return new File([blob], "telefonos-emergencia-inbursa.png", { type: "image/png" });
-    } catch {
-      return null;
-    }
-  }
-
   // 📎 App WhatsApp: panel nativo con el PDF adjunto (automático si la app está instalada).
   // Si nada lo soporta o el usuario cancela, rescata con la vía web.
   async function enviarPdfApp() {
@@ -134,29 +96,16 @@ export default function DetalleUnidad() {
       // copiado ANTES de todo (con el gesto fresco) para pegarlo en el chat si hace falta
       const copiado = await copiarMensaje(texto);
       const { blob, nombre } = await obtenerPdf();
-      const archivoPdf = new File([blob], nombre, { type: "application/pdf" });
-
-      // Los teléfonos viajan como IMAGEN adjunta: al compartir archivos WhatsApp móvil
-      // se come el texto, pero una imagen siempre se ve en el chat
-      const imagen = await crearImagenTelefonos();
-      const archivos = imagen ? [archivoPdf, imagen] : [archivoPdf];
-      const compartibles =
-        navigator.canShare && navigator.canShare({ files: archivos })
-          ? archivos
-          : navigator.canShare && navigator.canShare({ files: [archivoPdf] })
-            ? [archivoPdf]
-            : null;
-      if (compartibles) {
+      const file = new File([blob], nombre, { type: "application/pdf" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: compartibles, title: nombre, text: texto });
+          await navigator.share({ files: [file], title: nombre, text: texto });
           setAviso(
-            compartibles.length === 2
-              ? "📲 Carátula PDF + imagen de teléfonos de emergencia listos para el chat."
-              : copiado
-                ? "📲 PDF compartido · mensaje con teléfonos copiado al portapapeles: si no aparecieron, mantén presionada la caja de texto y pégalo."
-                : "📲 PDF compartido."
+            copiado
+              ? "📲 PDF compartido · El mensaje con los teléfonos quedó copiado al portapapeles: si no aparecieron en el chat, mantén presionada la caja de texto y pégalo."
+              : "📲 PDF compartido."
           );
-          return; // el sistema tomó los archivos
+          return; // el sistema tomó el PDF
         } catch (e) {
           if (e?.name !== "AbortError") throw e;
           // cancelaron el panel -> seguimos a la vía web
