@@ -27,6 +27,7 @@ export async function GET(req, { params }) {
       unidad: {
         id: unidad._id.toString(),
         serie: unidad.serie,
+        unidad5: (unidad.serie || "").slice(-5),
         placa: unidad.placa,
         cis: unidad.cis,
         poliza: unidad.poliza,

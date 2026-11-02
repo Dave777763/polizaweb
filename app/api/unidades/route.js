@@ -55,6 +55,7 @@ export async function GET(req) {
       archivo: { nombre: d.archivo?.nombre || null, tamano: d.archivo?.tamano || null },
       ownerEmail: d.ownerEmail,
       subido: d.subido,
+      unidad5: (d.serie || "").slice(-5),
     }));
     return Response.json({ ok: true, unidades });
   } catch (e) {

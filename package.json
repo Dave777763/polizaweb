@@ -15,7 +15,8 @@
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "unpdf": "^1.2.0"
+    "unpdf": "^1.2.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "mongodb-memory-server": "^11.3.0"

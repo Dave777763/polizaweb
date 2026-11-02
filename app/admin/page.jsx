@@ -87,9 +87,14 @@ export default function AdminPage() {
     <main className="contenedor">
       <div className="fila-acciones">
         <h1 style={{ fontSize: 22, margin: 0 }}>Administración</h1>
-        <a className="btn sec" href="/api/export">
-          ⬇ Exportar CSV (todas las unidades)
-        </a>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <a className="btn" href="/api/export?formato=xlsx">
+            📊 Relación Excel
+          </a>
+          <a className="btn sec" href="/api/export">
+            ⬇ Exportar CSV (todas las unidades)
+          </a>
+        </div>
       </div>
 
       {error && <div className="aviso">{error}</div>}
@@ -169,6 +174,7 @@ export default function AdminPage() {
       <table className="tabla" style={{ marginTop: 12 }}>
         <thead>
           <tr>
+            <th>N°</th>
             <th>Placa</th>
             <th>Serie</th>
             <th>CIS</th>
@@ -182,6 +188,7 @@ export default function AdminPage() {
             const chip = vigenciaChip(u.vigenciaHasta);
             return (
               <tr key={u.id}>
+                <td className="mono">{u.unidad5}</td>
                 <td className="mono">{u.placa || "—"}</td>
                 <td className="mono" style={{ fontSize: 12 }}>{u.serie}</td>
                 <td className="mono">{u.cis}</td>

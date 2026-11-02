@@ -37,7 +37,8 @@ export default function DetalleUnidad() {
   }
 
   function mensaje() {
-    return `${unidad.placa ? unidad.placa + " · " : ""}${unidad.descripcion || "Póliza de la flota"} · vigente hasta ${formatFecha(unidad.vigenciaHasta)}`;
+    const datos = `${unidad.placa ? unidad.placa + " · " : ""}${unidad.descripcion || "Póliza de la flota"} · vigente hasta ${formatFecha(unidad.vigenciaHasta)}`;
+    return `${datos}\n🚨 Reportar siniestro (Inbursa) 24 h:\n☎ 800 911 9000\n☎ 55 5447 8080\n📱 App Inbursa Móvil (con un clic te localizan)`;
   }
 
   async function obtenerPdf() {
@@ -168,6 +169,8 @@ export default function DetalleUnidad() {
           <dl style={{ fontSize: 13, lineHeight: 1.9, marginTop: 14 }}>
             <dt style={{ color: "var(--suave)" }}>Nº de serie (VIN)</dt>
             <dd style={{ margin: 0 }} className="mono">{unidad.serie}</dd>
+            <dt style={{ color: "var(--suave)" }}>Nº de unidad</dt>
+            <dd style={{ margin: 0 }} className="mono">{unidad.unidad5 || (unidad.serie || "").slice(-5)}</dd>
             <dt style={{ color: "var(--suave)" }}>CIS</dt>
             <dd style={{ margin: 0 }} className="mono">{unidad.cis}</dd>
             <dt style={{ color: "var(--suave)" }}>Póliza Inbursa</dt>

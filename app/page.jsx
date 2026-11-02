@@ -64,7 +64,10 @@ export default function Home() {
             <Link key={u.id} href={`/unidades/${u.id}`} className="tarjeta" style={{ display: "block", color: "inherit", textDecoration: "none" }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
                 <span className="placa">{u.placa || "SIN PLACA"}</span>
-                <span className={`chip ${chip.tone}`}>{chip.label}</span>
+                <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                  <span className="chip azul">N° {u.unidad5 || u.serie?.slice(-5)}</span>
+                  <span className={`chip ${chip.tone}`}>{chip.label}</span>
+                </span>
               </div>
               <div className="mono" style={{ fontSize: 12, color: "var(--suave)", marginTop: 6 }}>
                 {u.serie}
