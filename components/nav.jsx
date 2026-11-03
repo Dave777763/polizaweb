@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { version } from "../package.json";
 
 export default function Nav() {
   const path = usePathname();
@@ -42,6 +43,7 @@ export default function Nav() {
         )}
       </nav>
       <div className="usuario-caja">
+        <span style={{ fontSize: 12, color: "var(--suave)" }}>v{version}</span>
         <span>{user.nombre}</span>
         <span className="rol-pill">{user.rol}</span>
         <button className="btn sec" onClick={salir}>
