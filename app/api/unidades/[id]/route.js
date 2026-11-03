@@ -19,9 +19,6 @@ export async function GET(req, { params }) {
     const db = await getDb();
     const unidad = await db.collection("unidades").findOne({ _id: oid });
     if (!unidad) return Response.json({ ok: false, error: "Unidad no encontrada" }, { status: 404 });
-    if (user.rol !== "admin" && unidad.ownerId?.toString() !== user.sub) {
-      return Response.json({ ok: false, error: "No tienes acceso a esta unidad" }, { status: 403 });
-    }
     return Response.json({
       ok: true,
       unidad: {
@@ -66,9 +63,6 @@ export async function DELETE(req, { params }) {
     const col = db.collection("unidades");
     const unidad = await col.findOne({ _id: oid });
     if (!unidad) return Response.json({ ok: false, error: "No encontrada" }, { status: 404 });
-    if (user.rol !== "admin" && unidad.ownerId?.toString() !== user.sub) {
-      return Response.json({ ok: false, error: "No tienes permiso" }, { status: 403 });
-    }
     await deletePdf(unidad.archivo?.fileId);
     await col.deleteOne({ _id: oid });
     return Response.json({ ok: true });

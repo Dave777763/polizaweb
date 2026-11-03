@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { getDb, errorResponse } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { escapeRegExp } from "@/lib/util";
@@ -6,7 +5,7 @@ import { escapeRegExp } from "@/lib/util";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/unidades?q=texto  — admin ve todas, empleado ve las propias
+// GET /api/unidades?q=texto  — todos los usuarios con sesión ven todas las pólizas
 export async function GET(req) {
   try {
     const user = await getSessionUser();
@@ -14,19 +13,11 @@ export async function GET(req) {
     const db = await getDb();
     const col = db.collection("unidades");
 
-    const scope =
-      user.rol === "admin" ? {} : { ownerId: new ObjectId(user.sub) };
-
     const q = (req.nextUrl.searchParams.get("q") || "").trim();
     const campos = ["serie", "placa", "cis", "poliza", "descripcion", "propietario", "empleado"];
     const filter = q
-      ? {
-          $and: [
-            scope,
-            { $or: campos.map((c) => ({ [c]: { $regex: escapeRegExp(q), $options: "i" } })) },
-          ],
-        }
-      : scope;
+      ? { $or: campos.map((c) => ({ [c]: { $regex: escapeRegExp(q), $options: "i" } })) }
+      : {};
 
     const docs = await col
       .find(filter, {

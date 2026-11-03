@@ -21,9 +21,6 @@ export async function GET(req, { params }) {
     const db = await getDb();
     const unidad = await db.collection("unidades").findOne({ _id: oid });
     if (!unidad) return new Response("No encontrada", { status: 404 });
-    if (user.rol !== "admin" && unidad.ownerId?.toString() !== user.sub) {
-      return new Response("Prohibido", { status: 403 });
-    }
     const bucket = await getBucket();
     const streamNode = bucket.openDownloadStream(unidad.archivo.fileId);
     const webStream = Readable.toWeb(streamNode);
