@@ -133,15 +133,16 @@ export default function FacturasPage() {
       if (!res.ok) throw new Error("No se pudo obtener el PDF");
       const blob = await res.blob();
       const nombre = f.archivo?.nombre || `factura-${f.proveedor}.pdf`;
-      const file = new File([blob], nombre, { type: "application/pdf" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: nombre, text: texto });
-          setExito("📲 Factura compartida.");
-          return;
-        } catch (e) {
-          if (e?.name !== "AbortError") throw e;
-          return;
+      if (esMovil() && navigator.canShare) {
+        const file = new File([blob], nombre, { type: "application/pdf" });
+        if (navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: nombre, text: texto });
+            setExito("📲 Factura compartida.");
+            return;
+          } catch (e) {
+            if (e?.name === "AbortError") return;
+          }
         }
       }
       const url = URL.createObjectURL(blob);
@@ -201,7 +202,7 @@ export default function FacturasPage() {
                     <a className="btn sec" href={`/api/facturas/${clave}/pdf`} target="_blank" rel="noopener">
                       Ver PDF
                     </a>
-                    <button className="btn" onClick={() => compartir(f)} disabled={Boolean(compartiendo)}>
+                    <button className="btn" onClick={() => compartir(f)} disabled={compartiendo === clave}>
                       {compartiendo === clave ? <span className="girar" /> : "Compartir por WhatsApp"}
                     </button>
                   </div>
