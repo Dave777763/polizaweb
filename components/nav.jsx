@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { version } from "../package.json";
+import pkg from "../package.json";
 
 export default function Nav() {
   const path = usePathname();
@@ -36,6 +36,9 @@ export default function Nav() {
         <Link className={`enlace ${path === "/subir" ? "activo" : ""}`} href="/subir">
           Subir
         </Link>
+        <Link className={`enlace ${path === "/facturas" ? "activo" : ""}`} href="/facturas">
+          Facturas
+        </Link>
         {user.rol === "admin" && (
           <Link className={`enlace ${path === "/admin" ? "activo" : ""}`} href="/admin">
             Admin
@@ -43,7 +46,7 @@ export default function Nav() {
         )}
       </nav>
       <div className="usuario-caja">
-        <span style={{ fontSize: 12, color: "var(--suave)" }}>v{version}</span>
+        <span style={{ fontSize: 12, color: "var(--suave)" }}>v{pkg.version}</span>
         <span>{user.nombre}</span>
         <span className="rol-pill">{user.rol}</span>
         <button className="btn sec" onClick={salir}>

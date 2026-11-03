@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { version } from "../../package.json";
+import pkg from "../../package.json";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -104,7 +104,7 @@ export default function LoginPage() {
             {cargando ? <span className="girar" /> : "Iniciar sesión"}
           </button>
         </form>
-        <p style={{ color: "var(--suave)", fontSize: 12, marginBottom: 0 }}>v{version}</p>
+        <p style={{ color: "var(--suave)", fontSize: 12, marginBottom: 0 }}>v{pkg.version}</p>
       </div>
     </main>
   );
