@@ -22,18 +22,23 @@ polizaweb/
 │   ├── page.jsx              # tablero: buscador de unidades
 │   ├── login/page.jsx
 │   ├── subir/page.jsx        # drag & drop → preview → confirmar
+│   ├── facturas/page.jsx     # última factura de cada proveedor de gas
+│   ├── tarjetas/page.jsx     # tarjetas de circulación: subir, ver y compartir
 │   ├── unidades/[id]/page.jsx# detalle + PDF embebido
 │   ├── admin/page.jsx        # usuarios + todas las unidades + exportar CSV
 │   └── api/
 │       ├── auth/{login,logout,me}
 │       ├── unidades(/, /[id], /[id]/pdf)
 │       ├── policies/{preview,confirm}
+│       ├── facturas(/, /preview, /[proveedor]/pdf)
+│       ├── tarjetas(/, /preview, /[id], /[id]/pdf)
 │       ├── usuarios(/, /[id])
 │       └── export            # CSV (admin)
 ├── lib/
 │   ├── parser.js             # extracción de carátulas (portado del script Python)
 │   ├── pdf.js                # unpdf + parser
 │   ├── policies.js           # preparar filas y marcar estados de renovación
+│   ├── tarjetas.js           # lectura de tarjetas de circulación (OCR)
 │   ├── db.js                 # Mongo/GridFS helpers
 │   ├── jwt.js / session.js   # sesiones (cookie firmada, bcrypt)
 │   └── util.js
@@ -73,6 +78,39 @@ El proyecto anterior separó `placas/CARATULA_16211 20016322.pdf` (303 páginas,
    ```
    (otro usuario de prueba lo agregas luego desde /admin, o con el seed)
 
+## Tarjetas de circulación 🪪
+
+Cada unidad puede tener su **tarjeta de circulación** en PDF. La app la lee (placa, N.º de serie,
+folio, propietario, marca, año, REPUVE, fecha de expedición y vigencia) y la puede **compartir por
+WhatsApp** con el mismo flujo que las pólizas:
+
+| Situación | Comportamiento |
+|---|---|
+| Serie (VIN) o placa nueva | Se crea la tarjeta |
+| Ya existe esa serie/placa | 🔄 Se reemplaza el registro y el PDF anterior (último gana) |
+| PDF ilegible o sin datos | Se marca en la tabla del preview para corregir antes de guardar |
+
+- Pantalla: **Tarjetas** (barra superior). Se pueden soltar **varios PDF a la vez** y corregir
+  placas, serie, folio, propietario, fecha o vigencia antes de guardar.
+- Compartir: en móvil adjunta el PDF directo con la hoja nativa; en PC descarga el PDF y abre
+  WhatsApp Web con el mensaje listo (placas · serie · vigencia).
+- Si la póliza de una unidad ya está cargada, el detalle muestra el bloque
+  **🪪 Tarjeta de circulación** para verla o enviarla sin buscar en otra pantalla.
+
+### Carga masiva de una carpeta
+
+```bash
+npm run seed:tarjetas -- --dir="C:\ruta\a\las\tarjetas"
+```
+
+Lee todos los `.pdf` de la carpeta, extrae los datos y los guarda en MongoDB/GridFS
+(bucket `tarjetas_pdf`). Regla: por serie o placa, la última sustituye a la anterior.
+Para probar el lector sin escribir en la base:
+
+```bash
+npm run test:tarjetas -- --dir="C:\ruta\a\las\tarjetas"
+```
+
 ## Despliegue en línea (gratis)
 
 1. Sube el proyecto a un repo de GitHub (sin `.env.local`, ya está en `.gitignore`).
@@ -89,6 +127,11 @@ El proyecto anterior separó `placas/CARATULA_16211 20016322.pdf` (303 páginas,
 | GET | `/api/unidades/[id]/pdf` | PDF embebido (`?download=1` para descargar) |
 | POST | `/api/policies/preview` | multipart `files`: analiza sin guardar |
 | POST | `/api/policies/confirm` | multipart `files`: guarda con regla de renovación |
+| GET | `/api/tarjetas?q=&serie=` | lista/busca tarjetas de circulación |
+| POST | `/api/tarjetas/preview` | multipart `files`: lee placas/serie/folio… sin guardar |
+| POST | `/api/tarjetas` | multipart `file` + datos: guarda y reemplaza por serie/placa |
+| GET | `/api/tarjetas/[id]/pdf` | PDF de la tarjeta (`?download=1` para descargar) |
+| DELETE | `/api/tarjetas/[id]` | borra registro y PDF (admin o quien la subió) |
 | GET/POST | `/api/usuarios` | alta/listado (admin) |
 | GET | `/api/export` | CSV con todas las unidades (admin) |
 

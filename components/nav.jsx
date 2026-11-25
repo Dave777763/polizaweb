@@ -39,6 +39,9 @@ export default function Nav() {
         <Link className={`enlace ${path === "/facturas" ? "activo" : ""}`} href="/facturas">
           Facturas
         </Link>
+        <Link className={`enlace ${path === "/tarjetas" ? "activo" : ""}`} href="/tarjetas">
+          Tarjetas
+        </Link>
         {user.rol === "admin" && (
           <Link className={`enlace ${path === "/admin" ? "activo" : ""}`} href="/admin">
             Admin

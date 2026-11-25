@@ -1,12 +1,15 @@
-{
+﻿{
   "name": "polizaweb",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "seed:tarjetas": "node scripts/seed-tarjetas.mjs",
+    "test:tarjetas": "node scripts/test-tarjetas.mjs",
+    "test:e2e:tarjetas": "node scripts/test-e2e-tarjetas.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -22,3 +25,4 @@
     "mongodb-memory-server": "^11.3.0"
   }
 }
+

@@ -14,6 +14,8 @@ export default function DetalleUnidad() {
   const [compartiendo, setCompartiendo] = useState(false);
   const [aviso, setAviso] = useState("");
   const [menuWhats, setMenuWhats] = useState(false);
+  const [tarjeta, setTarjeta] = useState(null);
+  const [compartiendoTarjeta, setCompartiendoTarjeta] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -28,6 +30,16 @@ export default function DetalleUnidad() {
       })
       .catch(() => setError("Error de conexión"));
   }, [id]);
+
+  useEffect(() => {
+    if (!unidad?.serie) return;
+    fetch(`/api/tarjetas?serie=${encodeURIComponent(unidad.serie)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok && d.tarjetas?.length) setTarjeta(d.tarjetas[0]);
+      })
+      .catch(() => {});
+  }, [unidad?.serie]);
 
   function esMovil() {
     return (
@@ -143,8 +155,39 @@ export default function DetalleUnidad() {
     }
   }
 
-  async function eliminar() {
-    if (!confirm("¿Eliminar esta unidad (registro y PDF)? Esto es permanente.")) return;
+  // 🪪 Tarjeta de circulación de esta serie (si ya se subió)
+  async function compartirTarjeta() {
+    if (compartiendoTarjeta || !tarjeta) return;
+    setCompartiendoTarjeta(true);
+    setAviso("");
+    try {
+      const texto = `🪪 Tarjeta de circulación · Placas ${tarjeta.placas} · Serie ${tarjeta.serie}${
+        tarjeta.vigencia ? " · Vigencia " + tarjeta.vigencia : ""
+      }`;
+      const nombre = tarjeta.archivo?.nombre || `tarjeta-${tarjeta.placas || tarjeta.serie}.pdf`;
+      const res = await fetch(`/api/tarjetas/${tarjeta.id}/pdf`);
+      if (!res.ok) throw new Error("No se pudo obtener la tarjeta");
+      const blob = await res.blob();
+      const file = new File([blob], nombre, { type: "application/pdf" });
+      if (esMovil() && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: nombre, text: texto });
+          setAviso("📲 Tarjeta de circulación compartida.");
+          return;
+        } catch (e) {
+          if (e?.name === "AbortError") return;
+        }
+      }
+      descargarYAbrirWeb(blob, nombre, texto);
+      setAviso("📥 Tarjeta descargada y WhatsApp abierto: arrastra el archivo al chat.");
+    } catch (e) {
+      alert(e?.message || "No se pudo compartir la tarjeta");
+    } finally {
+      setCompartiendoTarjeta(false);
+    }
+  }
+
+  async function eliminar() {    if (!confirm("¿Eliminar esta unidad (registro y PDF)? Esto es permanente.")) return;
     const res = await fetch(`/api/unidades/${id}`, { method: "DELETE" });
     if (res.ok) router.replace("/");
     else {
@@ -259,6 +302,34 @@ export default function DetalleUnidad() {
               <button className="btn sec" onClick={() => setMenuWhats(false)} disabled={compartiendo}>
                 ✖ Cancelar
               </button>
+            </div>
+          )}
+
+          {tarjeta && (
+            <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--borde)" }}>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>🪪 Tarjeta de circulación</div>
+              <div className="linea-datos">
+                <span>Placas {tarjeta.placas || "—"}</span>
+                {tarjeta.vigencia && <span>Vigencia {tarjeta.vigencia}</span>}
+                {tarjeta.folio && <span>Folio {tarjeta.folio}</span>}
+              </div>
+              <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                <button
+                  className="btn"
+                  style={{ background: "#25D366" }}
+                  onClick={compartirTarjeta}
+                  disabled={compartiendoTarjeta}
+                >
+                  {compartiendoTarjeta ? <span className="girar" /> : "🟢 Compartir tarjeta por WhatsApp"}
+                </button>
+                <a
+                  className="btn sec"
+                  style={{ textAlign: "center" }}
+                  href={`/api/tarjetas/${tarjeta.id}/pdf?download=1`}
+                >
+                  ⬇ Descargar tarjeta
+                </a>
+              </div>
             </div>
           )}
         </div>
